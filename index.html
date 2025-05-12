@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Your Immigration Journey | URGE OF IMMIGRATION - Your Visa Consultancy Partner</title>
+    <meta name="description" content="Begin your immigration journey with URGE OF IMMIGRATION. Expert guidance for your visa process, personalized consultation, and seamless migration assistance.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="LOGO.svg">
+    <!-- International Telephone Input CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+    <!-- Select2 CSS for searchable dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <form id="contactForm" class="form-container">
+            <div class="form-header">
+                <h1 class="form-title">BEGIN YOUR JOURNEY</h1>
+            </div>
+
+            <div class="form-group">
+                <label for="name">NAME*</label>
+                <input type="text" id="name" name="name" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="email">EMAIL*</label>
+                <input type="email" id="email" name="email" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">PHONE NUMBER*</label>
+                <div class="phone-input-container">
+                    <div class="phone-dropdown-container">
+                        <div id="phone-country" class="country-selector">
+                            <span id="phone-code" class="country-code">+1</span>
+                            <span id="phone-country-name" class="country-name">USA (United States of America)</span>
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                                <path d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        <div id="phone-dropdown" class="country-dropdown">
+                            <div class="search-container">
+                                <input type="text" id="phone-search" class="search-input" placeholder="Search country or code...">
+                            </div>
+                            <div id="phone-country-list" class="country-list"></div>
+                        </div>
+                    </div>
+                    <input type="tel" id="phone" name="phone" required class="form-input">
+                </div>
+                <div class="format-hint">
+                    <div class="hint-dot"></div>
+                    <p id="phone-format-hint" class="hint-text">Format: +1 (XXX) XXX-XXXX</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="whatsapp">WHATSAPP NUMBER*</label>
+                <div class="phone-input-container">
+                    <div class="whatsapp-dropdown-container">
+                        <div id="whatsapp-country" class="country-selector">
+                            <span id="whatsapp-code" class="country-code">+1</span>
+                            <span id="whatsapp-country-name" class="country-name">USA (United States of America)</span>
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                                <path d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        <div id="whatsapp-dropdown" class="country-dropdown">
+                            <div class="search-container">
+                                <input type="text" id="whatsapp-search" class="search-input" placeholder="Search country or code...">
+                            </div>
+                            <div id="whatsapp-country-list" class="country-list"></div>
+                        </div>
+                    </div>
+                    <input type="tel" id="whatsapp" name="whatsapp" required class="form-input">
+                </div>
+                <div class="format-hint">
+                    <div class="hint-dot"></div>
+                    <p id="whatsapp-format-hint" class="hint-text">Format: +1 (XXX) XXX-XXXX</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="age">AGE* (Minimum 22 years)</label>
+                <input type="number" id="age" name="age" min="22" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="education">EDUCATION*</label>
+                <select id="education" name="education" required class="form-select searchable-select">
+                    <option value="" disabled selected>Select Education</option>
+                    <option value="High school">High school</option>
+                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                    <option value="Master's Degree">Master's Degree</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="currentOccupation">CURRENT OCCUPATION*</label>
+                <input type="text" id="currentOccupation" name="currentOccupation" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="nationality">NATIONALITY*</label>
+                <div class="country-select-container" data-select-name="nationality">
+                    <div class="select-button">
+                        <span class="selected-value">Select Nationality</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="dropdown">
+                        <div class="search-container">
+                            <input type="text" class="search-input" placeholder="Search country...">
+                        </div>
+                        <div class="options-list">
+                            <!-- Country options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="nationality" name="nationality" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="currentCountry">CURRENT COUNTRY*</label>
+                <div class="country-select-container" data-select-name="currentCountry">
+                    <div class="select-button">
+                        <span class="selected-value">Select Current Country</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="dropdown">
+                        <div class="search-container">
+                            <input type="text" class="search-input" placeholder="Search country...">
+                        </div>
+                        <div class="options-list">
+                            <!-- Country options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="currentCountry" name="currentCountry" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="migrateCountry">MIGRATE COUNTRY*</label>
+                <div class="country-select-container" data-select-name="migrateCountry">
+                    <div class="select-button">
+                        <span class="selected-value">Select Country</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="dropdown">
+                        <div class="options-list">
+                            <!-- Migrate country options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="migrateCountry" name="migrateCountry" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="immigrationType">IMMIGRATION TYPE*</label>
+                <div class="country-select-container" data-select-name="immigrationType">
+                    <div class="select-button">
+                        <span class="selected-value">Select Immigration Type</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="dropdown">
+                        <div class="options-list">
+                            <!-- Immigration type options will be populated by JavaScript based on selected country -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="immigrationType" name="immigrationType" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="submit-button">
+                    <span class="button-text">TAKE THE FIRST STEP</span>
+                    <span class="button-icon">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M5 12h14M12 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <div id="popup" class="popup">
+            <div id="popupMessage" class="popup-message"></div>
+        </div>
+
+        <div class="social-links">
+            <h3 class="social-title">Visit Our Official Website</h3>
+            <div class="social-buttons">
+                <a href="https://urgeofimmigration.com" target="_blank" class="social-button website">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>Explore More Services</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Form Scripts -->
+    <script src="countries.js"></script>
+    <script src="phone-codes.js"></script>
+    <script src="form.js"></script>
+</body>
+</html>
