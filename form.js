@@ -3,6 +3,31 @@ const SUPABASE_URL = 'https://fbhaattnnpjbwqoqhzdc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZiaGFhdHRubnBqYndxb3FoemRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MDkwNTgsImV4cCI6MjA2MjI4NTA1OH0.n0JVcKfxY6OBsO7_fsG6mBSiyTfglr3kJAcPuv3UPvc';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Campaign tracking parameters
+let campaignData = {
+    utm_source: '',
+    utm_medium: '',
+    utm_campaign: '',
+    utm_content: '',
+    utm_term: '',
+    fbclid: ''
+};
+
+// Function to get URL parameters
+function getURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Get campaign tracking parameters
+    campaignData.utm_source = urlParams.get('utm_source') || '';
+    campaignData.utm_medium = urlParams.get('utm_medium') || '';
+    campaignData.utm_campaign = urlParams.get('utm_campaign') || '';
+    campaignData.utm_content = urlParams.get('utm_content') || '';
+    campaignData.utm_term = urlParams.get('utm_term') || '';
+    campaignData.fbclid = urlParams.get('fbclid') || '';
+
+    console.log('Campaign data:', campaignData);
+}
+
 // Global state for active dropdown
 let activeDropdown = null;
 
@@ -230,6 +255,15 @@ async function handleSubmit(e) {
         source: 'lead-form'
     };
 
+    // Add campaign data as a JSON string in a notes field if it exists
+    // This avoids the need to add new columns to the database
+    if (Object.values(campaignData).some(value => value !== '')) {
+        // Store campaign data as JSON in the notes field
+        formData.notes = JSON.stringify({
+            campaign_data: campaignData
+        });
+    }
+
     // Validate age
     if (parseInt(formData.age) < 22) {
         showPopup("Age must be at least 22 years.", true);
@@ -263,6 +297,32 @@ async function handleSubmit(e) {
         }
 
         console.log('Form data successfully inserted into Supabase contacts table');
+
+        // Track lead conversion with Meta Pixel
+        try {
+            // Prepare Meta Pixel event parameters
+            const pixelParams = {
+                content_name: 'Immigration Lead Form',
+                content_category: formData.immigrationType,
+                currency: 'USD',
+                value: 1.00,
+                country: formData.migrateCountry,
+                status: 'submitted'
+            };
+
+            // Add campaign data to pixel parameters if available
+            if (campaignData.utm_source) pixelParams.utm_source = campaignData.utm_source;
+            if (campaignData.utm_medium) pixelParams.utm_medium = campaignData.utm_medium;
+            if (campaignData.utm_campaign) pixelParams.utm_campaign = campaignData.utm_campaign;
+            if (campaignData.fbclid) pixelParams.fbclid = campaignData.fbclid;
+
+            // Send Lead event to Meta Pixel
+            fbq('track', 'Lead', pixelParams);
+            console.log('Meta Pixel Lead event sent with params:', pixelParams);
+        } catch (pixelError) {
+            console.error('Meta Pixel tracking error:', pixelError);
+        }
+
         showPopup("Thank you for beginning your immigration journey with us! We'll contact you soon.");
 
         // Reset form
@@ -406,7 +466,7 @@ function handlePhoneSearchChange(e, type) {
 
     // Add filtered countries to list
     if (filteredCountries.length > 0) {
-        filteredCountries.forEach((country, index) => {
+        filteredCountries.forEach(country => {
             const countryElement = document.createElement('div');
             countryElement.className = 'country-option';
             countryElement.innerHTML = `
@@ -762,6 +822,9 @@ function addFormValidationListeners() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Get URL parameters for campaign tracking
+    getURLParameters();
+
     // Populate country dropdowns
     populateCountryDropdowns();
 
