@@ -12,6 +12,7 @@ const nationalitySelect = document.getElementById('nationality');
 const currentCountrySelect = document.getElementById('currentCountry');
 const migrateCountrySelect = document.getElementById('migrateCountry');
 const immigrationTypeSelect = document.getElementById('immigrationType');
+const immigrationTypeContainer = document.querySelector('[data-select-name="immigrationType"]');
 const phoneInput = document.getElementById('phone');
 const whatsappInput = document.getElementById('whatsapp');
 const popup = document.getElementById('popup');
@@ -124,6 +125,12 @@ function populateCountryDropdowns() {
             document.querySelector('[data-select-name="migrateCountry"] .dropdown').classList.remove('active');
             activeDropdown = null;
 
+            // Debug log
+            console.log(`Selected migrate country: ${country}`);
+
+            // Enable the immigration type dropdown
+            toggleImmigrationTypeDropdown(true);
+
             // Update immigration type options when migrate country changes
             updateImmigrationOptions(country);
         });
@@ -146,8 +153,20 @@ function updateImmigrationOptions(selectedCountry) {
     document.getElementById('immigrationType').value = '';
     document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = 'Select Immigration Type';
 
-    // Get options for selected country or default options
-    const options = immigrationOptions[selectedCountry] || immigrationOptions['default'];
+    // Find matching country options (case-insensitive)
+    let options = immigrationOptions['default']; // Default fallback
+
+    // Look for a case-insensitive match in the immigrationOptions keys
+    const countryKey = Object.keys(immigrationOptions).find(
+        key => key.toLowerCase() === selectedCountry.toLowerCase()
+    );
+
+    if (countryKey) {
+        options = immigrationOptions[countryKey];
+        console.log(`Found immigration options for: ${countryKey}`);
+    } else {
+        console.log(`No specific immigration options found for: ${selectedCountry}, using default options`);
+    }
 
     // Add options to dropdown
     options.forEach(option => {
@@ -237,6 +256,15 @@ async function handleSubmit(e) {
 
         // Reset form
         contactForm.reset();
+
+        // Reset dropdown displays
+        document.querySelector('[data-select-name="nationality"] .selected-value').textContent = 'Select Nationality';
+        document.querySelector('[data-select-name="currentCountry"] .selected-value').textContent = 'Select Current Country';
+        document.querySelector('[data-select-name="migrateCountry"] .selected-value').textContent = 'Select Country';
+        document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = 'Select Immigration Type';
+
+        // Disable immigration type dropdown again
+        toggleImmigrationTypeDropdown(false);
 
     } catch (error) {
         console.error('Submission error:', error);
@@ -459,6 +487,16 @@ function initializeCountryDropdowns() {
         selectButton.addEventListener('click', function(e) {
             e.preventDefault();
 
+            console.log(`Clicked on dropdown: ${selectName}`);
+
+            // Check if this is the immigration type dropdown and it's disabled
+            if (selectName === 'immigrationType' && container.classList.contains('disabled')) {
+                console.log('Immigration type dropdown is disabled');
+                // Show a popup message
+                showPopup('Please select a Migrate Country first', true);
+                return; // Don't open the dropdown
+            }
+
             // Close other dropdowns
             if (activeDropdown && activeDropdown !== selectName) {
                 document.querySelectorAll('.dropdown.active').forEach(d => {
@@ -472,8 +510,10 @@ function initializeCountryDropdowns() {
             dropdown.classList.toggle('active');
             activeDropdown = dropdown.classList.contains('active') ? selectName : null;
 
-            // Focus search input if dropdown is open
-            if (dropdown.classList.contains('active')) {
+            console.log(`Dropdown ${selectName} is now ${dropdown.classList.contains('active') ? 'active' : 'inactive'}`);
+
+            // Focus search input if dropdown is open and exists
+            if (dropdown.classList.contains('active') && searchInput) {
                 searchInput.focus();
                 searchInput.value = '';
                 // Show all options
@@ -484,20 +524,22 @@ function initializeCountryDropdowns() {
             }
         });
 
-        // Filter options on search input
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const options = optionsList.querySelectorAll('.option');
+        // Filter options on search input (if it exists)
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const options = optionsList.querySelectorAll('.option');
 
-            options.forEach(option => {
-                const text = option.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    option.style.display = 'block';
-                } else {
-                    option.style.display = 'none';
-                }
+                options.forEach(option => {
+                    const text = option.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
             });
-        });
+        }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
@@ -511,6 +553,31 @@ function initializeCountryDropdowns() {
     });
 }
 
+// Function to disable/enable immigration type dropdown
+function toggleImmigrationTypeDropdown(enable = false) {
+    if (enable) {
+        // Enable the dropdown
+        immigrationTypeContainer.classList.remove('disabled');
+
+        // Remove the disabled message if it exists
+        const existingMessage = immigrationTypeContainer.querySelector('.disabled-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+    } else {
+        // Disable the dropdown
+        immigrationTypeContainer.classList.add('disabled');
+
+        // Add a message if it doesn't exist
+        if (!immigrationTypeContainer.querySelector('.disabled-message')) {
+            const disabledMessage = document.createElement('div');
+            disabledMessage.className = 'disabled-message';
+            disabledMessage.textContent = 'Please select a Migrate Country first';
+            immigrationTypeContainer.appendChild(disabledMessage);
+        }
+    }
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Populate country dropdowns
@@ -518,6 +585,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize country dropdowns with search
     initializeCountryDropdowns();
+
+    // Initially disable the immigration type dropdown
+    toggleImmigrationTypeDropdown(false);
 
     // Add event listener for form submission
     contactForm.addEventListener('submit', handleSubmit);

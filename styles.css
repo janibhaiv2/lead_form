@@ -83,7 +83,7 @@ label {
 
 .form-input {
     width: 100%;
-    padding: 10px 15px;
+   padding: 15px 15px;
     border: none;
     border-radius: 4px;
     background-color: #1d1d1d;
@@ -95,7 +95,6 @@ label {
 /* Custom styling for select elements to match other dropdowns */
 .form-select {
     width: 100%;
-    padding: 10px 15px;
     border: none;
     border-radius: 4px;
     background-color: #1d1d1d;
@@ -113,6 +112,8 @@ label {
     cursor: pointer;
     margin-bottom: 10px; /* Match the margin of other dropdowns */
     transition: background-color 0.3s ease;
+   padding: 15px 15px;
+
 }
 
 .form-select:hover {
@@ -302,7 +303,7 @@ label {
     display: flex;
     align-items: center;
     background-color: #1d1d1d;
-    padding: 10px 15px;
+    padding: 15px 15px;
     border-radius: 4px;
     margin-bottom: 10px;
     cursor: pointer;
@@ -361,7 +362,7 @@ label {
 
 .search-input {
     width: 100%;
-    padding: 8px 12px;
+    padding: 10px 10px;
     border: none;
     border-radius: 4px;
     background-color: #2a2a2a;
@@ -370,13 +371,13 @@ label {
 }
 
 .country-list {
-    padding: 0 10px 10px;
+    padding:  10px 10px;
 }
 
 .country-option {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    padding: 10px 10px;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s ease;
@@ -424,7 +425,7 @@ label {
     align-items: center;
     justify-content: space-between;
     background-color: #1d1d1d;
-    padding: 10px 15px;
+    padding: 15px 15px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -459,22 +460,43 @@ label {
     display: block;
 }
 
-.options-list {
-    padding: 0 10px 10px;
-}
 
 .option {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    justify-content: start;
+    padding: 10px 10px;
     cursor: pointer;
-    border-radius: 4px;
     transition: background-color 0.2s ease;
     color: var(--sec-clr);
+
 }
 
 .option:hover {
     background-color: #2a2a2a;
+}
+
+/* Disabled dropdown styles */
+.country-select-container.disabled .select-button {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #181818;
+}
+
+.country-select-container.disabled .dropdown-arrow {
+    opacity: 0.5;
+}
+
+.country-select-container.disabled .select-button:hover {
+    background-color: #181818;
+}
+
+/* Disabled message */
+.disabled-message {
+    font-size: 12px;
+    color: #ff9800;
+    margin-top: 5px;
+    font-style: italic;
 }
 
 /* Responsive styles */
@@ -485,40 +507,6 @@ label {
 
     .form-container {
         padding: 20px;
-    }
-
-    /* Make dropdowns more touch-friendly */
-    .country-selector,
-    .select-button,
-    .form-select {
-        padding: 12px 15px;
-    }
-
-    /* Adjust select padding for the arrow */
-    .form-select {
-        padding-right: 40px;
-    }
-
-    .country-option,
-    .option {
-        padding: 12px;
-    }
-
-    /* Increase search input size */
-    .search-input {
-        padding: 10px;
-        font-size: 16px; /* Prevents iOS zoom on focus */
-    }
-
-    /* Make dropdown height smaller on mobile */
-    .country-dropdown,
-    .dropdown {
-        max-height: 250px;
-    }
-
-    /* Adjust phone input container */
-    .phone-input-container {
-        width: 100%;
     }
 
     /* Make country name shorter on small screens */
@@ -539,15 +527,7 @@ label {
         padding: 15px;
     }
 
-    .form-input {
-        padding: 10px;
-    }
 
-    .form-select {
-        padding: 10px;
-        padding-right: 35px; /* Adjust for the arrow */
-        background-position: right 10px center; /* Move arrow closer on small screens */
-    }
 
     /* Further adjustments for very small screens */
     .country-name {
