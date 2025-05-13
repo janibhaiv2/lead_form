@@ -26,6 +26,73 @@ function getURLParameters() {
     campaignData.fbclid = urlParams.get('fbclid') || '';
 
     console.log('Campaign data:', campaignData);
+
+    // Check if Meta Pixel is loaded
+    if (typeof fbq === 'undefined') {
+        console.error('Meta Pixel (fbq) is not defined. Trying to reload...');
+        // Try to reload the Meta Pixel
+        loadMetaPixel();
+    } else {
+        console.log('Meta Pixel is loaded and ready');
+    }
+}
+
+// Function to load Meta Pixel if it's not already loaded
+function loadMetaPixel() {
+    try {
+        console.log('Attempting to load Meta Pixel manually...');
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', '1232706385105571', {}, {debug: true});
+        fbq('track', 'PageView');
+        console.log('Meta Pixel loaded manually');
+    } catch (error) {
+        console.error('Failed to load Meta Pixel manually:', error);
+    }
+}
+
+// Function to track lead events with Meta Pixel
+function trackLeadEvent(formData) {
+    console.log('Tracking lead event with Meta Pixel...');
+
+    try {
+        // Prepare Meta Pixel event parameters
+        const pixelParams = {
+            content_name: 'Immigration Lead Form',
+            content_category: formData.immigrationType || 'Not Specified',
+            currency: 'USD',
+            value: 1.00,
+            country: formData.migrateCountry || 'Not Specified',
+            status: 'submitted'
+        };
+
+        // Add campaign data to pixel parameters if available
+        if (campaignData.utm_source) pixelParams.utm_source = campaignData.utm_source;
+        if (campaignData.utm_medium) pixelParams.utm_medium = campaignData.utm_medium;
+        if (campaignData.utm_campaign) pixelParams.utm_campaign = campaignData.utm_campaign;
+        if (campaignData.fbclid) pixelParams.fbclid = campaignData.fbclid;
+
+        // Send Lead event to Meta Pixel
+        if (typeof fbq !== 'undefined') {
+            fbq('track', 'Lead', pixelParams);
+            console.log('Meta Pixel Lead event sent with params:', pixelParams);
+
+            // Send a backup standard event in case the Lead event doesn't work
+            fbq('trackCustom', 'FormSubmission', pixelParams);
+            console.log('Meta Pixel FormSubmission event sent as backup');
+        } else {
+            console.error('fbq is still undefined when trying to track lead');
+        }
+    } catch (error) {
+        console.error('Error tracking lead event:', error);
+    }
 }
 
 // Global state for active dropdown
@@ -187,19 +254,70 @@ function updateImmigrationOptions(selectedCountry) {
     document.getElementById('immigrationType').value = '';
     document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = 'Select Immigration Type';
 
-    // Find matching country options (case-insensitive)
-    let options = immigrationOptions['default']; // Default fallback
+    // Check if immigrationOptions is defined
+    if (typeof immigrationOptions === 'undefined') {
+        console.error('immigrationOptions is not defined. Using default options.');
+        // Create default options if immigrationOptions is not defined
+        const defaultOptions = [
+            { value: "Visit Visa", label: "Visit Visa" },
+            { value: "Work Permit", label: "Work Permit" },
+            { value: "Business Visa", label: "Business Visa" },
+            { value: "Student Visa", label: "Student Visa" }
+        ];
 
-    // Look for a case-insensitive match in the immigrationOptions keys
-    const countryKey = Object.keys(immigrationOptions).find(
-        key => key.toLowerCase() === selectedCountry.toLowerCase()
-    );
+        // Add default options directly
+        defaultOptions.forEach(option => {
+            const immigrationOption = document.createElement('div');
+            immigrationOption.className = 'option';
+            immigrationOption.textContent = option.label;
+            immigrationOption.setAttribute('data-value', option.value);
+            immigrationOption.addEventListener('click', function() {
+                // Update hidden input
+                document.getElementById('immigrationType').value = option.value;
+                // Update display
+                document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = option.label;
+                // Close dropdown
+                document.querySelector('[data-select-name="immigrationType"] .dropdown').classList.remove('active');
+                activeDropdown = null;
+                // Validate form
+                validateForm();
+            });
+            immigrationTypeOptions.appendChild(immigrationOption);
+        });
+        return;
+    }
 
-    if (countryKey) {
-        options = immigrationOptions[countryKey];
-        console.log(`Found immigration options for: ${countryKey}`);
-    } else {
-        console.log(`No specific immigration options found for: ${selectedCountry}, using default options`);
+    // Default options if immigrationOptions is available but no match is found
+    const defaultOptions = [
+        { value: "Visit Visa", label: "Visit Visa" },
+        { value: "Work Permit", label: "Work Permit" },
+        { value: "Business Visa", label: "Business Visa" },
+        { value: "Student Visa", label: "Student Visa" }
+    ];
+
+    // Use default options
+    let options = defaultOptions;
+
+    try {
+        // Try to get options from countries.js if it's loaded
+        if (typeof window.immigrationOptions !== 'undefined') {
+            // Try to get country-specific options
+            const countryKey = Object.keys(window.immigrationOptions).find(
+                key => key.toLowerCase() === selectedCountry.toLowerCase()
+            );
+
+            if (countryKey) {
+                options = window.immigrationOptions[countryKey];
+                console.log(`Found immigration options for: ${countryKey}`);
+            } else if (window.immigrationOptions['default']) {
+                options = window.immigrationOptions['default'];
+                console.log(`No specific immigration options found for: ${selectedCountry}, using default options`);
+            }
+        } else {
+            console.log('immigrationOptions not found in global scope, using hardcoded defaults');
+        }
+    } catch (error) {
+        console.error('Error finding immigration options:', error);
     }
 
     // Add options to dropdown
@@ -300,25 +418,17 @@ async function handleSubmit(e) {
 
         // Track lead conversion with Meta Pixel
         try {
-            // Prepare Meta Pixel event parameters
-            const pixelParams = {
-                content_name: 'Immigration Lead Form',
-                content_category: formData.immigrationType,
-                currency: 'USD',
-                value: 1.00,
-                country: formData.migrateCountry,
-                status: 'submitted'
-            };
-
-            // Add campaign data to pixel parameters if available
-            if (campaignData.utm_source) pixelParams.utm_source = campaignData.utm_source;
-            if (campaignData.utm_medium) pixelParams.utm_medium = campaignData.utm_medium;
-            if (campaignData.utm_campaign) pixelParams.utm_campaign = campaignData.utm_campaign;
-            if (campaignData.fbclid) pixelParams.fbclid = campaignData.fbclid;
-
-            // Send Lead event to Meta Pixel
-            fbq('track', 'Lead', pixelParams);
-            console.log('Meta Pixel Lead event sent with params:', pixelParams);
+            // Check if Meta Pixel is loaded
+            if (typeof fbq === 'undefined') {
+                console.error('Meta Pixel (fbq) is not defined when trying to track Lead. Reloading...');
+                loadMetaPixel();
+                // Wait a moment for the pixel to load
+                setTimeout(() => {
+                    trackLeadEvent(formData);
+                }, 500);
+            } else {
+                trackLeadEvent(formData);
+            }
         } catch (pixelError) {
             console.error('Meta Pixel tracking error:', pixelError);
         }
