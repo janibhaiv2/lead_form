@@ -168,6 +168,25 @@ label {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Disabled submit button */
+.submit-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #777;
+    transform: none;
+    box-shadow: none;
+}
+
+.submit-button:disabled:hover {
+    background-color: #777;
+    transform: none;
+    box-shadow: none;
+}
+
+.submit-button:disabled:before {
+    display: none;
+}
+
 .button-text {
     color: var(--pri-clr);
     font-size: 1.1rem;
@@ -497,6 +516,21 @@ label {
     color: #ff9800;
     margin-top: 5px;
     font-style: italic;
+}
+
+/* Required field indicator - hidden */
+.field-error {
+    display: none; /* Hide error messages */
+}
+
+/* Removed red outline for invalid fields */
+.invalid-field {
+    /* No border styling */
+}
+
+/* Form validation status - hidden */
+.validation-status {
+    display: none; /* Hide validation status message */
 }
 
 /* Responsive styles */

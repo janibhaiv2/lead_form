@@ -17,6 +17,8 @@ const phoneInput = document.getElementById('phone');
 const whatsappInput = document.getElementById('whatsapp');
 const popup = document.getElementById('popup');
 const popupMessage = document.getElementById('popupMessage');
+const submitButton = document.querySelector('.submit-button');
+const validationStatus = document.getElementById('validation-status');
 
 // Phone input state
 let phoneSelectedCountry = null;
@@ -78,6 +80,8 @@ function populateCountryDropdowns() {
             // Close dropdown
             document.querySelector('[data-select-name="nationality"] .dropdown').classList.remove('active');
             activeDropdown = null;
+            // Validate form
+            validateForm();
         });
         nationalityOptions.appendChild(nationalityOption);
 
@@ -94,6 +98,8 @@ function populateCountryDropdowns() {
             // Close dropdown
             document.querySelector('[data-select-name="currentCountry"] .dropdown').classList.remove('active');
             activeDropdown = null;
+            // Validate form
+            validateForm();
         });
         currentCountryOptions.appendChild(currentCountryOption);
     });
@@ -133,6 +139,9 @@ function populateCountryDropdowns() {
 
             // Update immigration type options when migrate country changes
             updateImmigrationOptions(country);
+
+            // Validate form
+            validateForm();
         });
         migrateCountryOptions.appendChild(migrateOption);
     });
@@ -182,6 +191,8 @@ function updateImmigrationOptions(selectedCountry) {
             // Close dropdown
             document.querySelector('[data-select-name="immigrationType"] .dropdown').classList.remove('active');
             activeDropdown = null;
+            // Validate form
+            validateForm();
         });
         immigrationTypeOptions.appendChild(immigrationOption);
     });
@@ -429,6 +440,9 @@ function handleCountrySelect(country, type) {
 
     updatePhoneCountryDisplay(type);
     closePhoneDropdown(type);
+
+    // Validate form after country selection
+    validateForm();
 }
 
 // Handle phone number input
@@ -471,6 +485,9 @@ function handlePhoneNumberChange(e, type) {
             formatHint.style.color = ''; // Default color for invalid
         }
     }
+
+    // Validate form after phone number change
+    validateForm();
 }
 
 // Initialize country dropdowns with search functionality
@@ -578,6 +595,171 @@ function toggleImmigrationTypeDropdown(enable = false) {
     }
 }
 
+// Function to validate all form fields
+function validateForm() {
+    let isValid = true;
+    let firstInvalidField = null;
+    const requiredFields = [
+        { id: 'name', label: 'Name' },
+        { id: 'email', label: 'Email' },
+        { id: 'age', label: 'Age', minValue: 22 },
+        { id: 'currentOccupation', label: 'Current Occupation' },
+        { id: 'education', label: 'Education' },
+        { id: 'nationality', label: 'Nationality' },
+        { id: 'currentCountry', label: 'Current Country' },
+        { id: 'migrateCountry', label: 'Migrate Country' },
+        { id: 'immigrationType', label: 'Immigration Type' }
+    ];
+
+    // Clear previous error messages
+    document.querySelectorAll('.field-error').forEach(el => el.remove());
+    document.querySelectorAll('.invalid-field').forEach(el => el.classList.remove('invalid-field'));
+
+    // Validate each required field
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field.id);
+        const value = element.value.trim();
+
+        // Check if field is empty
+        if (!value) {
+            isValid = false;
+
+            // Find the appropriate container to add error message
+            let container;
+            if (field.id === 'nationality' || field.id === 'currentCountry' ||
+                field.id === 'migrateCountry' || field.id === 'immigrationType') {
+                container = document.querySelector(`[data-select-name="${field.id}"]`);
+                container.querySelector('.select-button').classList.add('invalid-field');
+            } else {
+                container = element.parentElement;
+                element.classList.add('invalid-field');
+            }
+
+            // Add error message if it doesn't exist
+            if (!container.querySelector('.field-error')) {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'field-error';
+                errorMessage.textContent = `${field.label} is required`;
+                container.appendChild(errorMessage);
+            }
+
+            // Store first invalid field for scrolling
+            if (!firstInvalidField) {
+                firstInvalidField = container;
+            }
+        }
+
+        // Check minimum value for age
+        if (field.id === 'age' && value && parseInt(value) < field.minValue) {
+            isValid = false;
+            const container = element.parentElement;
+            element.classList.add('invalid-field');
+
+            // Add error message if it doesn't exist
+            if (!container.querySelector('.field-error')) {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'field-error';
+                errorMessage.textContent = `Age must be at least ${field.minValue} years`;
+                container.appendChild(errorMessage);
+            }
+
+            if (!firstInvalidField) {
+                firstInvalidField = container;
+            }
+        }
+
+        // Validate email format
+        if (field.id === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                isValid = false;
+                const container = element.parentElement;
+                element.classList.add('invalid-field');
+
+                // Add error message if it doesn't exist
+                if (!container.querySelector('.field-error')) {
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'field-error';
+                    errorMessage.textContent = 'Please enter a valid email address';
+                    container.appendChild(errorMessage);
+                }
+
+                if (!firstInvalidField) {
+                    firstInvalidField = container;
+                }
+            }
+        }
+    });
+
+    // Validate phone numbers
+    const phoneMaxDigits = phoneSelectedCountry.format.split('').filter(char => char === 'X').length;
+    if (!phoneNumber || phoneNumber.length < phoneMaxDigits) {
+        isValid = false;
+        const container = phoneInput.parentElement.parentElement;
+        phoneInput.classList.add('invalid-field');
+
+        // Add error message if it doesn't exist
+        if (!container.querySelector('.field-error')) {
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'field-error';
+            errorMessage.textContent = `Please enter a valid ${phoneSelectedCountry.country} phone number`;
+            container.appendChild(errorMessage);
+        }
+
+        if (!firstInvalidField) {
+            firstInvalidField = container;
+        }
+    }
+
+    // Validate WhatsApp number
+    const whatsappMaxDigits = whatsappSelectedCountry.format.split('').filter(char => char === 'X').length;
+    if (!whatsappNumber || whatsappNumber.length < whatsappMaxDigits) {
+        isValid = false;
+        const container = whatsappInput.parentElement.parentElement;
+        whatsappInput.classList.add('invalid-field');
+
+        // Add error message if it doesn't exist
+        if (!container.querySelector('.field-error')) {
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'field-error';
+            errorMessage.textContent = `Please enter a valid ${whatsappSelectedCountry.country} WhatsApp number`;
+            container.appendChild(errorMessage);
+        }
+
+        if (!firstInvalidField) {
+            firstInvalidField = container;
+        }
+    }
+
+    // Update submit button only
+    submitButton.disabled = !isValid;
+
+    // Don't show validation status message
+    validationStatus.style.display = 'none';
+
+    return isValid;
+}
+
+// Function to add input event listeners to all form fields
+function addFormValidationListeners() {
+    // Add listeners to text inputs
+    const textInputs = ['name', 'email', 'age', 'currentOccupation'];
+    textInputs.forEach(id => {
+        const element = document.getElementById(id);
+        element.addEventListener('input', validateForm);
+        element.addEventListener('blur', validateForm);
+    });
+
+    // Add listener to education select
+    document.getElementById('education').addEventListener('change', validateForm);
+
+    // Phone and WhatsApp inputs already have listeners that update their values
+    // We'll modify those handlers to call validateForm
+
+    // For custom dropdowns, we need to modify the click handlers when options are selected
+    // This is done in the respective event listeners in populateCountryDropdowns
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Populate country dropdowns
@@ -589,6 +771,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initially disable the immigration type dropdown
     toggleImmigrationTypeDropdown(false);
 
+    // Add validation listeners to form fields
+    addFormValidationListeners();
+
+    // Initial validation
+    validateForm();
+
     // Add event listener for form submission
-    contactForm.addEventListener('submit', handleSubmit);
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Validate form before submission
+        if (validateForm()) {
+            handleSubmit(e);
+        }
+        // No error popup if validation fails
+    });
 });
