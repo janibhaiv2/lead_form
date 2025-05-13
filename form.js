@@ -244,6 +244,8 @@ function populateCountryDropdowns() {
 
 // Update immigration type options based on selected country
 function updateImmigrationOptions(selectedCountry) {
+    console.log(`Updating immigration options for country: ${selectedCountry}`);
+
     // Get the options list
     const immigrationTypeOptions = document.querySelector('[data-select-name="immigrationType"] .options-list');
 
@@ -254,40 +256,7 @@ function updateImmigrationOptions(selectedCountry) {
     document.getElementById('immigrationType').value = '';
     document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = 'Select Immigration Type';
 
-    // Check if immigrationOptions is defined
-    if (typeof immigrationOptions === 'undefined') {
-        console.error('immigrationOptions is not defined. Using default options.');
-        // Create default options if immigrationOptions is not defined
-        const defaultOptions = [
-            { value: "Visit Visa", label: "Visit Visa" },
-            { value: "Work Permit", label: "Work Permit" },
-            { value: "Business Visa", label: "Business Visa" },
-            { value: "Student Visa", label: "Student Visa" }
-        ];
-
-        // Add default options directly
-        defaultOptions.forEach(option => {
-            const immigrationOption = document.createElement('div');
-            immigrationOption.className = 'option';
-            immigrationOption.textContent = option.label;
-            immigrationOption.setAttribute('data-value', option.value);
-            immigrationOption.addEventListener('click', function() {
-                // Update hidden input
-                document.getElementById('immigrationType').value = option.value;
-                // Update display
-                document.querySelector('[data-select-name="immigrationType"] .selected-value').textContent = option.label;
-                // Close dropdown
-                document.querySelector('[data-select-name="immigrationType"] .dropdown').classList.remove('active');
-                activeDropdown = null;
-                // Validate form
-                validateForm();
-            });
-            immigrationTypeOptions.appendChild(immigrationOption);
-        });
-        return;
-    }
-
-    // Default options if immigrationOptions is available but no match is found
+    // Default options if no match is found
     const defaultOptions = [
         { value: "Visit Visa", label: "Visit Visa" },
         { value: "Work Permit", label: "Work Permit" },
@@ -295,30 +264,43 @@ function updateImmigrationOptions(selectedCountry) {
         { value: "Student Visa", label: "Student Visa" }
     ];
 
-    // Use default options
+    // Use default options initially
     let options = defaultOptions;
 
     try {
-        // Try to get options from countries.js if it's loaded
-        if (typeof window.immigrationOptions !== 'undefined') {
-            // Try to get country-specific options
-            const countryKey = Object.keys(window.immigrationOptions).find(
-                key => key.toLowerCase() === selectedCountry.toLowerCase()
-            );
+        // Check if immigrationOptions is defined (from countries.js)
+        if (typeof immigrationOptions !== 'undefined') {
+            console.log('Immigration options found in global scope');
+            console.log('Available country keys:', Object.keys(immigrationOptions));
 
-            if (countryKey) {
-                options = window.immigrationOptions[countryKey];
-                console.log(`Found immigration options for: ${countryKey}`);
-            } else if (window.immigrationOptions['default']) {
-                options = window.immigrationOptions['default'];
-                console.log(`No specific immigration options found for: ${selectedCountry}, using default options`);
+            // First try exact match
+            if (immigrationOptions[selectedCountry]) {
+                options = immigrationOptions[selectedCountry];
+                console.log(`Found exact match for: ${selectedCountry}`);
+            }
+            // Then try case-insensitive match
+            else {
+                const countryKey = Object.keys(immigrationOptions).find(
+                    key => key.toLowerCase() === selectedCountry.toLowerCase()
+                );
+
+                if (countryKey) {
+                    options = immigrationOptions[countryKey];
+                    console.log(`Found case-insensitive match for: ${selectedCountry} as ${countryKey}`);
+                } else {
+                    // Use default options if no match
+                    options = immigrationOptions['default'] || defaultOptions;
+                    console.log(`No match found for: ${selectedCountry}, using default options`);
+                }
             }
         } else {
-            console.log('immigrationOptions not found in global scope, using hardcoded defaults');
+            console.error('immigrationOptions is not defined in global scope');
         }
     } catch (error) {
         console.error('Error finding immigration options:', error);
     }
+
+    console.log(`Using options for ${selectedCountry}:`, options);
 
     // Add options to dropdown
     options.forEach(option => {
